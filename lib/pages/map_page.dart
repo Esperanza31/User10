@@ -42,6 +42,7 @@ class _Map_PageState extends State<Map_Page> with WidgetsBindingObserver {
   bool ignoring = false;
   bool _isDarkMode = false;
   LatLng? Bus_Location;
+  DateTime currentTime = DateTime.now();
 
 
   @override
@@ -88,10 +89,22 @@ class _Map_PageState extends State<Map_Page> with WidgetsBindingObserver {
   void updateSelectedBox(int selectedBox) {
     setState(() {
       this.selectedBox = selectedBox;
-      if (selectedBox == 1)
-        fetchRoute(LatLng(1.3359291665604225, 103.78307744418207));
-      else if (selectedBox == 2)
-        fetchRoute(LatLng(1.3157535241817033, 103.76510924418207));
+      if (selectedBox == 1){
+        if(currentTime.hour >= 7 && currentTime.hour <10){
+          fetchRoute(LatLng(1.3356931749752623, 103.78289498576169), LatLng(1.327467, 103.776263), LatLng(1.3327930713846318, 103.77771893587253)); //Morning Route
+        }
+        else if (currentTime.hour >= 15 && currentTime.hour <=19)
+          fetchRoute(LatLng(1.3327930713846318, 103.77771893587253),LatLng(1.3310003377322532, 103.79773782712023), LatLng(1.3359291665604225, 103.78307744418207)); //Afternoon Route
+      }
+      else if (selectedBox == 2) {
+        if (currentTime.hour >= 7 && currentTime.hour < 10) {
+          fetchRoute(LatLng(1.314905, 103.765182), LatLng(1.318088, 103.763798),
+              LatLng(1.3327930713846318, 103.77771893587253)); //Morning Route
+        }
+        else if (currentTime.hour >= 15 && currentTime.hour <=19) {
+          fetchRoute(LatLng(1.3327930713846318, 103.77771893587253), LatLng(1.313663, 103.765765),LatLng(1.314905, 103.765182)); //Afternoon Route
+        }
+      }
     });
   }
 
@@ -123,11 +136,10 @@ class _Map_PageState extends State<Map_Page> with WidgetsBindingObserver {
     return _locationService.buildCompass(_heading, _currentP!);
   }
 
-  Future<void> fetchRoute(LatLng destination) async {
-    LatLng start = LatLng(1.3327930713846318, 103.77771893587253);
+  Future<void> fetchRoute(LatLng start, LatLng wayPoint1, LatLng destination) async {
     var url = Uri.parse(
-        'http://router.project-osrm.org/route/v1/foot/${start.longitude},${start
-            .latitude};${destination.longitude},${destination
+        'http://router.project-osrm.org/route/v1/car/${start.longitude},${start
+            .latitude};${wayPoint1.longitude},${wayPoint1.latitude};${destination.longitude},${destination
             .latitude}?overview=simplified&steps=true');
     var response = await http.get(url);
 
@@ -163,7 +175,6 @@ class _Map_PageState extends State<Map_Page> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    DateTime currentTime = DateTime.now();
     Widget servicePage;
 
     if (currentTime.hour < service_time) {
